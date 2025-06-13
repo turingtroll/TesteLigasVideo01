@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Video Menu</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #111;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      height: 100vh;
+    }
+    #overlayMenu {
+      width: 300px;
+      background: #222;
+      padding: 1em;
+      overflow-y: auto;
+    }
+    .folder {
+      font-weight: bold;
+      margin-top: 1em;
+      color: #f0c000;
+      cursor: pointer;
+    }
+    .item-list {
+      display: none;
+      margin-left: 1em;
+      margin-top: 0.5em;
+    }
+    .item {
+      cursor: pointer;
+      padding: 3px 0;
+      color: #ccc;
+    }
+    .item:hover {
+      color: white;
+      text-decoration: underline;
+    }
+    #videoContainer {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1em;
+    }
+    iframe {
+      width: 100%;
+      height: 90%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+
+<div id="overlayMenu"></div>
+
+<div id="videoContainer">
+  <iframe id="ytplayer" src="https://www.youtube.com/embed/BeJ_BNygQHQ?enablejsapi=1&autoplay=1&mute=1" allow="autoplay" allowfullscreen></iframe>
+</div>
+
+<script>
+  const folderMap = {
+    "1_Overview": [
+      "1_COVER.png", "2_CLANS.png", "3_WE.png",
+      "4_PLAYERS_1.png", "4_PLAYERS_2.png", "4_PLAYERS_3.png",
+      "5_BONUS.png"
+    ],
+    "2_OurTeam": [
+      "PLAYER_1.png", "PLAYER_10.png", "PLAYER_11.png", "PLAYER_12.png",
+      "PLAYER_13.png", "PLAYER_14.png", "PLAYER_15.png", "PLAYER_16.png",
+      "PLAYER_2.png", "PLAYER_3.png", "PLAYER_4.png", "PLAYER_5.png",
+      "PLAYER_6.png", "PLAYER_7.png", "PLAYER_8.png", "PLAYER_9.png"
+    ],
+    "Dia_01": [...Array(22).keys()].map(i => `Slide ${i+1}`),
+    "Dia_02": [...Array(22).keys()].map(i => `Slide ${i+1}`),
+    "Dia_03": [...Array(22).keys()].map(i => `Slide ${i+1}`),
+    "Dia_04": [...Array(22).keys()].map(i => `Slide ${i+1}`),
+    "Dia_05": [...Array(22).keys()].map(i => `Slide ${i+1}`),
+    "Dia_06": [...Array(22).keys()].map(i => `Slide ${i+1}`),
+    "Dia_07": [...Array(22).keys()].map(i => `Slide ${i+1}`)
+  };
+
+  const menu = document.getElementById('overlayMenu');
+  const timePerSlide = 0.5;
+  let slideIndex = 0;
+  let flatItems = [];
+
+  for (const [folderName, files] of Object.entries(folderMap)) {
+    const folder = document.createElement('div');
+    folder.className = 'folder';
+    folder.innerText = folderName;
+
+    const itemList = document.createElement('div');
+    itemList.className = 'item-list';
+
+    files.forEach(file => {
+      const item = document.createElement('div');
+      item.className = 'item';
+      item.innerText = file.replace(".png", "");
+      const time = (slideIndex * timePerSlide).toFixed(1);
+      item.dataset.time = time;
+      flatItems.push(item);
+      itemList.appendChild(item);
+      slideIndex++;
+    });
+
+    folder.addEventListener('click', () => {
+      itemList.style.display = itemList.style.display === 'block' ? 'none' : 'block';
+    });
+
+    menu.appendChild(folder);
+    menu.appendChild(itemList);
+  }
+
+  let player;
+  function onYouTubeIframeAPIReady() {
+    player = new YT.Player('ytplayer', {
+      events: {
+        'onReady': onPlayerReady
+      }
+    });
+  }
+
+  function onPlayerReady(event) {
+    // Play then immediately pause to allow seek on click
+    player.playVideo();
+    setTimeout(() => player.pauseVideo(), 100);
+
+    flatItems.forEach(item => {
+      item.addEventListener('click', () => {
+        player.seekTo(parseFloat(item.dataset.time), true);
+        player.pauseVideo();
+      });
+    });
+  }
+
+  const tag = document.createElement('script');
+  tag.src = "https://www.youtube.com/iframe_api";
+  document.body.appendChild(tag);
+</script>
+
+</body>
+</html>
