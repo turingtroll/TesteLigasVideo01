@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Liga T0C 2025 07 3</title>
+  <title>Liga T0C 25 07 3</title>
   <style>
     body {
       font-family: sans-serif;
@@ -14,55 +14,79 @@
       height: 100vh;
     }
     #overlayMenu {
-      width: 180px;
+      width: 150px;
       background: #222;
       padding: 1em;
       overflow-y: auto;
     }
-    .folder, .subfolder {
+    .folder {
       font-weight: bold;
       margin-top: 1em;
-      color: white;
+      color: #fff;
       cursor: pointer;
       user-select: none;
+      display: flex;
+      align-items: center;
     }
-    .folder::before, .subfolder::before {
-      content: "\25B6"; /* ▶ */
-      display: inline-block;
-      margin-right: 5px;
-      transition: transform 0.2s;
-      color: white;
-    }
-    .folder.expanded::before, .subfolder.expanded::before {
-      content: "\25BC"; /* ▼ */
-    }
-    .folder .folder-title, .subfolder .folder-title {
-      color: white;
-    }
-    .folder.active .folder-title,
-    .subfolder.active .folder-title {
+    .folder.active {
       color: #f0c000;
+    }
+    .folder::before {
+      content: "▶";
+      display: inline-block;
+      margin-right: 0.3em;
+      transition: transform 0.2s ease;
+      color: #f0c000;
+      flex-shrink: 0;
+    }
+    .folder.expanded::before {
+      transform: rotate(90deg);
     }
     .item-list {
       display: none;
+      margin-left: 1.5em;
+      margin-top: 0.5em;
+    }
+    .item-list .subfolder {
       margin-left: 1em;
       margin-top: 0.5em;
+    }
+    .folder.subfolder {
+      font-weight: normal;
+      color: #fff;
+      margin-top: 0.8em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      user-select: none;
+    }
+    .folder.subfolder.active {
+      color: #f0c000;
+    }
+    .folder.subfolder::before {
+      content: "▶";
+      display: inline-block;
+      margin-right: 0.3em;
+      transition: transform 0.2s ease;
+      color: #f0c000;
+      flex-shrink: 0;
+    }
+    .folder.subfolder.expanded::before {
+      transform: rotate(90deg);
     }
     .item {
       cursor: pointer;
       padding: 3px 0;
-      color: white;
+      color: #fff;
       user-select: none;
+      margin-bottom: 0.1em;
     }
-    .item .label {
-      color: white;
-    }
-    .item:hover .label {
-      text-decoration: underline;
-    }
-    .item.active .label {
-      font-weight: bold;
+    .item.active {
       color: #f0c000;
+      font-weight: bold;
+    }
+    .item:hover {
+      text-decoration: underline;
     }
     #videoContainer {
       flex: 1;
@@ -76,6 +100,39 @@
       height: 90%;
       border: none;
     }
+
+    /* MOBILE STYLES */
+    @media (max-width: 600px) {
+      #overlayMenu {
+        width: 100%;
+        height: auto;
+        max-height: 50vh;
+      }
+      body {
+        flex-direction: column;
+        height: auto;
+      }
+      .folder {
+        font-size: 130%;
+        margin-top: 2em;
+      }
+      .folder.subfolder {
+        font-size: 130%;
+        margin-top: 2em;
+      }
+      .item {
+        font-size: 300%;
+        margin-bottom: 0.4em;
+      }
+      #videoContainer {
+        width: 100%;
+        height: auto;
+        padding: 0.5em;
+      }
+      iframe {
+        height: 50vh;
+      }
+    }
   </style>
 </head>
 <body>
@@ -87,23 +144,26 @@
 </div>
 
 <script>
+  // Helper to generate number arrays as strings with leading zero if needed
   function numArray(start, end) {
     const arr = [];
-    for (let i = start; i <= end; i++) {
+    for(let i=start; i<=end; i++) {
       arr.push(i < 10 ? '0' + i : '' + i);
     }
     return arr;
   }
 
+  // Build folderMap according to your files list and grouping
   const folderMap = {
-    "INFO": numArray(1, 8),
-    "NOSSO TIME": numArray(1, 16),
+    "INFO": numArray(1,8),
+    "NOSSO TIME": numArray(1,16),
   };
 
-  for (let dia = 1; dia <= 7; dia++) {
+  // Add Dia 1 to Dia 7, each with Info(1-7) and Bases(1-15)
+  for(let dia=1; dia<=7; dia++) {
     folderMap[`DIA ${dia}`] = {
-      "Info": numArray(1, 7),
-      "Bases": numArray(1, 15)
+      "Info": numArray(1,7),
+      "Bases": numArray(1,15)
     };
   }
 
@@ -112,77 +172,63 @@
   let slideIndex = 0;
   const flatItems = [];
 
-  function collapseAll(except) {
-    document.querySelectorAll('.folder').forEach(f => {
-      if (f !== except) {
-        f.classList.remove('expanded');
-        f.classList.remove('active');
-        const sibling = f.nextElementSibling;
-        if (sibling && sibling.classList.contains('item-list')) {
-          sibling.style.display = 'none';
-        }
-      }
-    });
-  }
-
-  for (const [folderName, content] of Object.entries(folderMap)) {
+  // Create menu structure dynamically
+  for(const [folderName, content] of Object.entries(folderMap)) {
     const folder = document.createElement('div');
     folder.className = 'folder';
-    folder.innerHTML = `<span class="folder-title">${folderName}</span>`;
+    folder.textContent = folderName;
 
     const itemList = document.createElement('div');
     itemList.className = 'item-list';
 
-    if (Array.isArray(content)) {
+    // Check if content is array (flat) or object (subfolders)
+    if(Array.isArray(content)) {
+      // flat array of items
       content.forEach(itemName => {
         const item = document.createElement('div');
         item.className = 'item';
-        item.innerHTML = `<span class="label">${itemName}</span>`;
+        item.textContent = itemName;
         item.dataset.time = (slideIndex * timePerSlide).toFixed(1);
         slideIndex++;
         flatItems.push(item);
         itemList.appendChild(item);
-
-        item.addEventListener('click', () => {
-          flatItems.forEach(i => i.classList.remove('active'));
-          item.classList.add('active');
-          folder.classList.add('active');
-          player.seekTo(parseFloat(item.dataset.time), true);
-          player.pauseVideo();
-        });
       });
     } else {
-      for (const [subfolderName, subItems] of Object.entries(content)) {
+      // content is an object => subfolders
+      for(const [subfolderName, subItems] of Object.entries(content)) {
         const subfolder = document.createElement('div');
-        subfolder.className = 'subfolder';
-        subfolder.innerHTML = `<span class="folder-title">${subfolderName}</span>`;
+        subfolder.className = 'folder subfolder';
+        subfolder.textContent = subfolderName;
 
         const subItemList = document.createElement('div');
         subItemList.className = 'item-list';
 
+        subfolder.addEventListener('click', () => {
+          // Collapse other subfolders inside this folder
+          Array.from(itemList.querySelectorAll('.item-list')).forEach(el => {
+            if(el !== subItemList) el.style.display = 'none';
+          });
+          Array.from(itemList.querySelectorAll('.folder.subfolder')).forEach(f => {
+            if(f !== subfolder) f.classList.remove('expanded');
+          });
+
+          if (subItemList.style.display === 'block') {
+            subItemList.style.display = 'none';
+            subfolder.classList.remove('expanded');
+          } else {
+            subItemList.style.display = 'block';
+            subfolder.classList.add('expanded');
+          }
+        });
+
         subItems.forEach(itemName => {
           const item = document.createElement('div');
           item.className = 'item';
-          item.innerHTML = `<span class="label">${itemName}</span>`;
+          item.textContent = itemName;
           item.dataset.time = (slideIndex * timePerSlide).toFixed(1);
           slideIndex++;
           flatItems.push(item);
           subItemList.appendChild(item);
-
-          item.addEventListener('click', () => {
-            flatItems.forEach(i => i.classList.remove('active'));
-            item.classList.add('active');
-            folder.classList.add('active');
-            subfolder.classList.add('active');
-            player.seekTo(parseFloat(item.dataset.time), true);
-            player.pauseVideo();
-          });
-        });
-
-        subfolder.addEventListener('click', () => {
-          const isVisible = subItemList.style.display === 'block';
-          subfolder.classList.toggle('expanded', !isVisible);
-          subItemList.style.display = isVisible ? 'none' : 'block';
         });
 
         itemList.appendChild(subfolder);
@@ -191,16 +237,28 @@
     }
 
     folder.addEventListener('click', () => {
-      const isVisible = itemList.style.display === 'block';
-      collapseAll(folder);
-      folder.classList.toggle('expanded', !isVisible);
-      itemList.style.display = isVisible ? 'none' : 'block';
+      // Collapse other main folders
+      Array.from(menu.querySelectorAll('.item-list')).forEach(el => {
+        if(el !== itemList) el.style.display = 'none';
+      });
+      Array.from(menu.querySelectorAll('.folder')).forEach(f => {
+        if(f !== folder) f.classList.remove('expanded');
+      });
+
+      if (itemList.style.display === 'block') {
+        itemList.style.display = 'none';
+        folder.classList.remove('expanded');
+      } else {
+        itemList.style.display = 'block';
+        folder.classList.add('expanded');
+      }
     });
 
     menu.appendChild(folder);
     menu.appendChild(itemList);
   }
 
+  // YouTube API setup
   let player;
   function onYouTubeIframeAPIReady() {
     player = new YT.Player('ytplayer', {
@@ -211,10 +269,39 @@
   }
 
   function onPlayerReady(event) {
+    // Autoplay and then immediately pause to enable seeking
     player.playVideo();
     setTimeout(() => player.pauseVideo(), 100);
+
+    // Add click handlers for each menu item to seek and pause
+    flatItems.forEach(item => {
+      item.addEventListener('click', () => {
+        // Remove active from all
+        flatItems.forEach(i => i.classList.remove('active'));
+        // Remove active from folders
+        Array.from(document.querySelectorAll('.folder, .folder.subfolder')).forEach(f => f.classList.remove('active'));
+
+        item.classList.add('active');
+        // Also highlight its folder and subfolder parents
+        let el = item.parentElement;
+        while(el && el !== menu) {
+          if(el.classList.contains('item-list')) {
+            const prev = el.previousElementSibling;
+            if(prev && prev.classList.contains('folder')) {
+              prev.classList.add('active');
+            }
+          }
+          el = el.parentElement;
+        }
+
+        const time = parseFloat(item.dataset.time);
+        player.seekTo(time, true);
+        player.pauseVideo();
+      });
+    });
   }
 
+  // Load YouTube IFrame API script dynamically
   const tag = document.createElement('script');
   tag.src = "https://www.youtube.com/iframe_api";
   document.body.appendChild(tag);
