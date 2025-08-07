@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Liga T0C 2025 07 3</title>
+  <title>Liga T0C 25 07 3</title>
   <style>
     body {
       font-family: sans-serif;
@@ -14,35 +14,51 @@
       height: 100vh;
     }
     #overlayMenu {
-      width: 150px;
+      width: 180px;
       background: #222;
       padding: 1em;
       overflow-y: auto;
     }
-    .folder {
+    .folder, .subfolder {
       font-weight: bold;
       margin-top: 1em;
-      color: #f0c000;
+      color: white;
       cursor: pointer;
+      user-select: none;
+    }
+    .folder::before, .subfolder::before {
+      content: "▶";
+      display: inline-block;
+      margin-right: 5px;
+      transition: transform 0.2s;
+      color: white;
+    }
+    .folder.expanded::before, .subfolder.expanded::before {
+      content: "▼";
+    }
+    .folder .folder-title, .subfolder .folder-title {
+      color: #f0c000;
     }
     .item-list {
       display: none;
       margin-left: 1em;
       margin-top: 0.5em;
     }
-    .item-list .subfolder {
-      margin-left: 1em;
-      margin-top: 0.5em;
-    }
     .item {
       cursor: pointer;
       padding: 3px 0;
-      color: #ccc;
+      color: white;
       user-select: none;
     }
-    .item:hover {
-      color: white;
+    .item .label {
+      color: #f0c000;
+    }
+    .item:hover .label {
       text-decoration: underline;
+    }
+    .item.active .label {
+      font-weight: bold;
+      color: #f0c000;
     }
     #videoContainer {
       flex: 1;
@@ -67,26 +83,23 @@
 </div>
 
 <script>
-  // Helper to generate number arrays as strings with leading zero if needed
   function numArray(start, end) {
     const arr = [];
-    for(let i=start; i<=end; i++) {
+    for (let i = start; i <= end; i++) {
       arr.push(i < 10 ? '0' + i : '' + i);
     }
     return arr;
   }
 
-  // Build folderMap according to your files list and grouping
   const folderMap = {
-    "INFO": numArray(1,8),
-    "NOSSO TIME": numArray(1,16),
+    "INFO": numArray(1, 8),
+    "NOSSO TIME": numArray(1, 16),
   };
 
-  // Add Dia 1 to Dia 7, each with Info(1-7) and Bases(1-15)
-  for(let dia=1; dia<=7; dia++) {
+  for (let dia = 1; dia <= 7; dia++) {
     folderMap[`DIA ${dia}`] = {
-      "Info": numArray(1,7),
-      "Bases": numArray(1,15)
+      "Info": numArray(1, 7),
+      "Bases": numArray(1, 15)
     };
   }
 
@@ -95,53 +108,59 @@
   let slideIndex = 0;
   const flatItems = [];
 
-  // Create menu structure dynamically
-  for(const [folderName, content] of Object.entries(folderMap)) {
+  function collapseAll(except) {
+    document.querySelectorAll('.folder').forEach(f => {
+      if (f !== except) {
+        f.classList.remove('expanded');
+        const sibling = f.nextElementSibling;
+        if (sibling && sibling.classList.contains('item-list')) {
+          sibling.style.display = 'none';
+        }
+      }
+    });
+  }
+
+  for (const [folderName, content] of Object.entries(folderMap)) {
     const folder = document.createElement('div');
     folder.className = 'folder';
-    folder.textContent = folderName;
+    folder.innerHTML = `<span class="folder-title">${folderName}</span>`;
 
     const itemList = document.createElement('div');
     itemList.className = 'item-list';
 
-    // Check if content is array (flat) or object (subfolders)
-    if(Array.isArray(content)) {
-      // flat array of items
+    if (Array.isArray(content)) {
       content.forEach(itemName => {
         const item = document.createElement('div');
         item.className = 'item';
-        item.textContent = itemName;
+        item.innerHTML = `<span class="label">${itemName}</span>`;
         item.dataset.time = (slideIndex * timePerSlide).toFixed(1);
         slideIndex++;
         flatItems.push(item);
         itemList.appendChild(item);
       });
     } else {
-      // content is an object => subfolders
-      for(const [subfolderName, subItems] of Object.entries(content)) {
+      for (const [subfolderName, subItems] of Object.entries(content)) {
         const subfolder = document.createElement('div');
-        subfolder.className = 'folder subfolder';
-        subfolder.style.fontWeight = 'normal';
-        subfolder.style.color = '#ccc';
-        subfolder.style.marginTop = '0.8em';
-        subfolder.style.cursor = 'pointer';
-        subfolder.textContent = subfolderName;
+        subfolder.className = 'subfolder';
+        subfolder.innerHTML = `<span class="folder-title">${subfolderName}</span>`;
 
         const subItemList = document.createElement('div');
         subItemList.className = 'item-list';
 
-        subfolder.addEventListener('click', () => {
-          subItemList.style.display = subItemList.style.display === 'block' ? 'none' : 'block';
-        });
-
         subItems.forEach(itemName => {
           const item = document.createElement('div');
           item.className = 'item';
-          item.textContent = itemName;
+          item.innerHTML = `<span class="label">${itemName}</span>`;
           item.dataset.time = (slideIndex * timePerSlide).toFixed(1);
           slideIndex++;
           flatItems.push(item);
           subItemList.appendChild(item);
+        });
+
+        subfolder.addEventListener('click', () => {
+          const isVisible = subItemList.style.display === 'block';
+          subfolder.classList.toggle('expanded', !isVisible);
+          subItemList.style.display = isVisible ? 'none' : 'block';
         });
 
         itemList.appendChild(subfolder);
@@ -150,14 +169,16 @@
     }
 
     folder.addEventListener('click', () => {
-      itemList.style.display = itemList.style.display === 'block' ? 'none' : 'block';
+      const isVisible = itemList.style.display === 'block';
+      collapseAll(folder);
+      folder.classList.toggle('expanded', !isVisible);
+      itemList.style.display = isVisible ? 'none' : 'block';
     });
 
     menu.appendChild(folder);
     menu.appendChild(itemList);
   }
 
-  // YouTube API setup
   let player;
   function onYouTubeIframeAPIReady() {
     player = new YT.Player('ytplayer', {
@@ -168,13 +189,13 @@
   }
 
   function onPlayerReady(event) {
-    // Autoplay and then immediately pause to enable seeking
     player.playVideo();
     setTimeout(() => player.pauseVideo(), 100);
 
-    // Add click handlers for each menu item to seek and pause
     flatItems.forEach(item => {
       item.addEventListener('click', () => {
+        flatItems.forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
         const time = parseFloat(item.dataset.time);
         player.seekTo(time, true);
         player.pauseVideo();
@@ -182,7 +203,6 @@
     });
   }
 
-  // Load YouTube IFrame API script dynamically
   const tag = document.createElement('script');
   tag.src = "https://www.youtube.com/iframe_api";
   document.body.appendChild(tag);
