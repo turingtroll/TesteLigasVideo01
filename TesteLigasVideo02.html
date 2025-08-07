@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Liga T0C 25 07 3</title>
+  <title>Liga T0C 2025 07 3</title>
   <style>
     body {
       font-family: sans-serif;
@@ -27,16 +27,20 @@
       user-select: none;
     }
     .folder::before, .subfolder::before {
-      content: "▶";
+      content: "\25B6"; /* ▶ */
       display: inline-block;
       margin-right: 5px;
       transition: transform 0.2s;
       color: white;
     }
     .folder.expanded::before, .subfolder.expanded::before {
-      content: "▼";
+      content: "\25BC"; /* ▼ */
     }
     .folder .folder-title, .subfolder .folder-title {
+      color: white;
+    }
+    .folder.active .folder-title,
+    .subfolder.active .folder-title {
       color: #f0c000;
     }
     .item-list {
@@ -51,7 +55,7 @@
       user-select: none;
     }
     .item .label {
-      color: #f0c000;
+      color: white;
     }
     .item:hover .label {
       text-decoration: underline;
@@ -112,6 +116,7 @@
     document.querySelectorAll('.folder').forEach(f => {
       if (f !== except) {
         f.classList.remove('expanded');
+        f.classList.remove('active');
         const sibling = f.nextElementSibling;
         if (sibling && sibling.classList.contains('item-list')) {
           sibling.style.display = 'none';
@@ -137,6 +142,14 @@
         slideIndex++;
         flatItems.push(item);
         itemList.appendChild(item);
+
+        item.addEventListener('click', () => {
+          flatItems.forEach(i => i.classList.remove('active'));
+          item.classList.add('active');
+          folder.classList.add('active');
+          player.seekTo(parseFloat(item.dataset.time), true);
+          player.pauseVideo();
+        });
       });
     } else {
       for (const [subfolderName, subItems] of Object.entries(content)) {
@@ -155,6 +168,15 @@
           slideIndex++;
           flatItems.push(item);
           subItemList.appendChild(item);
+
+          item.addEventListener('click', () => {
+            flatItems.forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+            folder.classList.add('active');
+            subfolder.classList.add('active');
+            player.seekTo(parseFloat(item.dataset.time), true);
+            player.pauseVideo();
+          });
         });
 
         subfolder.addEventListener('click', () => {
@@ -191,16 +213,6 @@
   function onPlayerReady(event) {
     player.playVideo();
     setTimeout(() => player.pauseVideo(), 100);
-
-    flatItems.forEach(item => {
-      item.addEventListener('click', () => {
-        flatItems.forEach(i => i.classList.remove('active'));
-        item.classList.add('active');
-        const time = parseFloat(item.dataset.time);
-        player.seekTo(time, true);
-        player.pauseVideo();
-      });
-    });
   }
 
   const tag = document.createElement('script');
