@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
-  <title>Liga T0C 25-07 Clã 3</title>
+  <title>Liga T0C 2025-07 Clã 3</title>
   <style>
     body {
       margin: 0;
@@ -11,10 +11,11 @@
       font-family: sans-serif;
     }
     #menu {
-      width: 150px;
-      background: #f0f0f0;
+      width: 200px;
+      background: black;
       padding: 10px;
       overflow-y: auto;
+      color: white;
     }
     #menu details {
       margin-bottom: 10px;
@@ -27,8 +28,11 @@
       display: block;
       margin-left: 10px;
       text-decoration: none;
-      color: #333;
+      color: white;
       padding: 2px 0;
+    }
+    #menu details details {
+      margin-left: 15px;
     }
     #content {
       flex-grow: 1;
@@ -47,67 +51,32 @@
   <div id="menu">
     <details open>
       <summary>INFO</summary>
-      <a href="#" data-time="0">01</a>
-      <a href="#" data-time="5">02</a>
-      <a href="#" data-time="10">03</a>
-      <a href="#" data-time="15">04</a>
-      <a href="#" data-time="20">05</a>
-      <a href="#" data-time="25">06</a>
-      <a href="#" data-time="30">07</a>
-      <a href="#" data-time="35">08</a>
+      ${Array.from({length: 8}, (_, i) => `<a href="#" data-time="${i * 5}">${String(i + 1).padStart(2, '0')}</a>`).join('')}
     </details>
 
     <details>
       <summary>NOSSO TIME</summary>
-      <a href="#" data-time="40">01</a>
-      <a href="#" data-time="45">02</a>
-      <a href="#" data-time="50">03</a>
-      <a href="#" data-time="55">04</a>
-      <a href="#" data-time="60">05</a>
-      <a href="#" data-time="65">06</a>
-      <a href="#" data-time="70">07</a>
-      <a href="#" data-time="75">08</a>
-      <a href="#" data-time="80">09</a>
-      <a href="#" data-time="85">10</a>
-      <a href="#" data-time="90">11</a>
-      <a href="#" data-time="95">12</a>
-      <a href="#" data-time="100">13</a>
-      <a href="#" data-time="105">14</a>
-      <a href="#" data-time="110">15</a>
-      <a href="#" data-time="115">16</a>
+      ${Array.from({length: 16}, (_, i) => `<a href="#" data-time="${(i + 8) * 5}">${String(i + 1).padStart(2, '0')}</a>`).join('')}
     </details>
 
-    <details>
-      <summary>DIA 1</summary>
+    ${Array.from({length: 7}, (_, diaIndex) => {
+      const baseTime = 8 * 5 + 16 * 5 + diaIndex * (7 + 15) * 5;
+      const infoLinks = Array.from({length: 7}, (_, i) => `<a href="#" data-time="${baseTime + i * 5}">${String(i + 1).padStart(2, '0')}</a>`).join('');
+      const basesLinks = Array.from({length: 15}, (_, i) => `<a href="#" data-time="${baseTime + 7 * 5 + i * 5}">${String(i + 1).padStart(2, '0')}</a>`).join('');
+
+      return `
       <details>
-        <summary>Info</summary>
-        <a href="#" data-time="120">01</a>
-        <a href="#" data-time="125">02</a>
-        <a href="#" data-time="130">03</a>
-        <a href="#" data-time="135">04</a>
-        <a href="#" data-time="140">05</a>
-        <a href="#" data-time="145">06</a>
-        <a href="#" data-time="150">07</a>
-      </details>
-      <details>
-        <summary>Bases</summary>
-        <a href="#" data-time="155">01</a>
-        <a href="#" data-time="160">02</a>
-        <a href="#" data-time="165">03</a>
-        <a href="#" data-time="170">04</a>
-        <a href="#" data-time="175">05</a>
-        <a href="#" data-time="180">06</a>
-        <a href="#" data-time="185">07</a>
-        <a href="#" data-time="190">08</a>
-        <a href="#" data-time="195">09</a>
-        <a href="#" data-time="200">10</a>
-        <a href="#" data-time="205">11</a>
-        <a href="#" data-time="210">12</a>
-        <a href="#" data-time="215">13</a>
-        <a href="#" data-time="220">14</a>
-        <a href="#" data-time="225">15</a>
-      </details>
-    </details>
+        <summary>DIA ${diaIndex + 1}</summary>
+        <details>
+          <summary>   Info</summary>
+          ${infoLinks}
+        </details>
+        <details>
+          <summary>   Bases</summary>
+          ${basesLinks}
+        </details>
+      </details>`;
+    }).join('')}
   </div>
 
   <div id="content">
@@ -131,12 +100,10 @@
       });
     }
 
-    // Load YouTube API
     const tag = document.createElement('script');
     tag.src = "https://www.youtube.com/iframe_api";
     document.head.appendChild(tag);
 
-    // Click handlers for menu links
     document.addEventListener('click', function (e) {
       if (e.target.matches('a[data-time]')) {
         e.preventDefault();
