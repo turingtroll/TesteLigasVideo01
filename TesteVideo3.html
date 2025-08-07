@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Liga T0C 2025-07 Clã 3</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      height: 100vh;
+      font-family: sans-serif;
+    }
+    #menu {
+      width: 200px;
+      background: black;
+      padding: 10px;
+      overflow-y: auto;
+      color: white;
+    }
+    #menu details {
+      margin-bottom: 10px;
+    }
+    #menu summary {
+      font-weight: bold;
+      cursor: pointer;
+    }
+    #menu a {
+      display: block;
+      margin-left: 10px;
+      text-decoration: none;
+      color: white;
+      padding: 2px 0;
+    }
+    #menu details details {
+      margin-left: 15px;
+    }
+    #content {
+      flex-grow: 1;
+      background: black;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    iframe {
+      width: 90%;
+      height: 90%;
+    }
+  </style>
+</head>
+<body>
+  <div id="menu">
+    <details open>
+      <summary>INFO</summary>
+      ${Array.from({length: 8}, (_, i) => `<a href="#" data-time="${i * 5}">${String(i + 1).padStart(2, '0')}</a>`).join('')}
+    </details>
+
+    <details>
+      <summary>NOSSO TIME</summary>
+      ${Array.from({length: 16}, (_, i) => `<a href="#" data-time="${(i + 8) * 5}">${String(i + 1).padStart(2, '0')}</a>`).join('')}
+    </details>
+
+    ${Array.from({length: 7}, (_, diaIndex) => {
+      const baseTime = 8 * 5 + 16 * 5 + diaIndex * (7 + 15) * 5;
+      const infoLinks = Array.from({length: 7}, (_, i) => `<a href="#" data-time="${baseTime + i * 5}">${String(i + 1).padStart(2, '0')}</a>`).join('');
+      const basesLinks = Array.from({length: 15}, (_, i) => `<a href="#" data-time="${baseTime + 7 * 5 + i * 5}">${String(i + 1).padStart(2, '0')}</a>`).join('');
+
+      return `
+      <details>
+        <summary>DIA ${diaIndex + 1}</summary>
+        <details>
+          <summary>   Info</summary>
+          ${infoLinks}
+        </details>
+        <details>
+          <summary>   Bases</summary>
+          ${basesLinks}
+        </details>
+      </details>`;
+    }).join('')}
+  </div>
+
+  <div id="content">
+    <div id="player"></div>
+  </div>
+
+  <script>
+    let player;
+
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('player', {
+        height: '100%',
+        width: '100%',
+        videoId: '7p2fUNzqwbM',
+        playerVars: {
+          autoplay: 1,
+          controls: 1,
+          modestbranding: 1,
+          rel: 0
+        }
+      });
+    }
+
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(tag);
+
+    document.addEventListener('click', function (e) {
+      if (e.target.matches('a[data-time]')) {
+        e.preventDefault();
+        const time = parseInt(e.target.dataset.time);
+        if (player && player.seekTo) {
+          player.seekTo(time, true);
+          player.pauseVideo();
+        }
+      }
+    });
+  </script>
+</body>
+</html>
