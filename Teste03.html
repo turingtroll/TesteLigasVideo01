@@ -20,7 +20,7 @@
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      align-items: center;
+      align-items: flex-start; /* Changed from center to left-align menu */
     }
     #topInfo {
       text-align: center;
@@ -30,6 +30,7 @@
       border-bottom: 1px solid #555;
       padding-bottom: 0.8em;
       line-height: 1.5em;
+      width: 100%; /* Make sure it spans full menu width */
     }
     .folder {
       font-weight: bold;
@@ -60,7 +61,7 @@
       margin-top: 0.5em;
     }
     .item-list .subfolder {
-      margin-left: 1em;
+      margin-left: 2em; /* Increased indentation for subfolders */
       margin-top: 0.5em;
     }
     .folder.subfolder {
@@ -114,7 +115,7 @@
     }
 
     /* MOBILE STYLES */
-    @media (max-width: 600px) {
+    @media (max-width: 800px) {
       #overlayMenu {
         width: 100%;
         height: auto;
@@ -165,12 +166,12 @@
 
     const [, yy, mm, clan] = match;
     const year = "20" + yy;
-    const monthNames = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JULHO", "AGO", "SET", "OUT", "NOV", "DEZ"];
+    const monthNames = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
     const monthName = monthNames[parseInt(mm, 10) - 1] || "MÊS?";
-    
+
     const topInfoHTML = `
+      THE0CLAN<br>
       LIGA<br>
-      THE0CLAN + OMEGA<br>
       ${year} / ${monthName}<br>
       CLÃ ${clan}
     `;
@@ -180,7 +181,6 @@
   // Simulate a filename to populate topInfo block
   updateTopInfoFromFilename('2507_3_info_04.png');
 
-  // Helper to generate number arrays as strings with leading zero if needed
   function numArray(start, end) {
     const arr = [];
     for(let i=start; i<=end; i++) {
