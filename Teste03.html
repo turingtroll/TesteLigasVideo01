@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Liga T0C 2025 07 3</title>
+  <title>Liga T0C 25 07 3</title>
   <style>
     body {
       font-family: sans-serif;
@@ -20,17 +20,18 @@
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      align-items: flex-start; /* Changed from center to left-align menu */
+      align-items: flex-start;
     }
     #topInfo {
       text-align: center;
       color: #f0c000;
-      font-size: 0.85em;
+      font-size: 1.2em;
+      font-weight: bold;
       margin-bottom: 1em;
       border-bottom: 1px solid #555;
       padding-bottom: 0.8em;
       line-height: 1.5em;
-      width: 100%; /* Make sure it spans full menu width */
+      width: 100%;
     }
     .folder {
       font-weight: bold;
@@ -61,7 +62,7 @@
       margin-top: 0.5em;
     }
     .item-list .subfolder {
-      margin-left: 2em; /* Increased indentation for subfolders */
+      margin-left: 2em;
       margin-top: 0.5em;
     }
     .folder.subfolder {
@@ -127,15 +128,18 @@
       }
       .folder {
         font-size: 130%;
-        margin-top: 2em;
+        margin-top: 4em;
       }
       .folder.subfolder {
         font-size: 130%;
-        margin-top: 2em;
+        margin-top: 4em;
       }
       .item {
         font-size: 300%;
-        margin-bottom: 0.4em;
+        margin-bottom: 0.8em;
+      }
+      #topInfo {
+        font-size: 130%;
       }
       #videoContainer {
         width: 100%;
@@ -159,16 +163,13 @@
 </div>
 
 <script>
-  // --- NEW: Info block parser
   function updateTopInfoFromFilename(filename) {
     const match = filename.match(/^(\d{2})(\d{2})_(\d+)_/);
     if (!match) return;
-
     const [, yy, mm, clan] = match;
     const year = "20" + yy;
     const monthNames = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
     const monthName = monthNames[parseInt(mm, 10) - 1] || "MÊS?";
-
     const topInfoHTML = `
       THE0CLAN<br>
       LIGA<br>
@@ -178,14 +179,11 @@
     document.getElementById("topInfo").innerHTML = topInfoHTML;
   }
 
-  // Simulate a filename to populate topInfo block
   updateTopInfoFromFilename('2507_3_info_04.png');
 
   function numArray(start, end) {
     const arr = [];
-    for(let i=start; i<=end; i++) {
-      arr.push(i < 10 ? '0' + i : '' + i);
-    }
+    for(let i=start; i<=end; i++) arr.push(i < 10 ? '0' + i : '' + i);
     return arr;
   }
 
@@ -193,7 +191,6 @@
     "INFO": numArray(1,8),
     "NOSSO TIME": numArray(1,16),
   };
-
   for(let dia=1; dia<=7; dia++) {
     folderMap[`DIA ${dia}`] = {
       "Info": numArray(1,7),
@@ -310,9 +307,7 @@
         while(el && el !== menu) {
           if(el.classList.contains('item-list')) {
             const prev = el.previousElementSibling;
-            if(prev && prev.classList.contains('folder')) {
-              prev.classList.add('active');
-            }
+            if(prev && prev.classList.contains('folder')) prev.classList.add('active');
           }
           el = el.parentElement;
         }
