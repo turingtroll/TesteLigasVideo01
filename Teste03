@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Liga T0C 25 07 3</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #111;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      height: 100vh;
+    }
+    #overlayMenu {
+      width: 150px;
+      background: #222;
+      padding: 1em;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #topInfo {
+      text-align: center;
+      color: #f0c000;
+      font-size: 0.85em;
+      margin-bottom: 1em;
+      border-bottom: 1px solid #555;
+      padding-bottom: 0.8em;
+      line-height: 1.5em;
+    }
+    .folder {
+      font-weight: bold;
+      margin-top: 1em;
+      color: #fff;
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      align-items: center;
+    }
+    .folder.active {
+      color: #f0c000;
+    }
+    .folder::before {
+      content: "▶";
+      display: inline-block;
+      margin-right: 0.3em;
+      transition: transform 0.2s ease;
+      color: #f0c000;
+      flex-shrink: 0;
+    }
+    .folder.expanded::before {
+      transform: rotate(90deg);
+    }
+    .item-list {
+      display: none;
+      margin-left: 1.5em;
+      margin-top: 0.5em;
+    }
+    .item-list .subfolder {
+      margin-left: 1em;
+      margin-top: 0.5em;
+    }
+    .folder.subfolder {
+      font-weight: normal;
+      color: #fff;
+      margin-top: 0.8em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      user-select: none;
+    }
+    .folder.subfolder.active {
+      color: #f0c000;
+    }
+    .folder.subfolder::before {
+      content: "▶";
+      display: inline-block;
+      margin-right: 0.3em;
+      transition: transform 0.2s ease;
+      color: #f0c000;
+      flex-shrink: 0;
+    }
+    .folder.subfolder.expanded::before {
+      transform: rotate(90deg);
+    }
+    .item {
+      cursor: pointer;
+      padding: 3px 0;
+      color: #fff;
+      user-select: none;
+      margin-bottom: 0.1em;
+    }
+    .item.active {
+      color: #f0c000;
+      font-weight: bold;
+    }
+    .item:hover {
+      text-decoration: underline;
+    }
+    #videoContainer {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1em;
+    }
+    iframe {
+      width: 100%;
+      height: 90%;
+      border: none;
+    }
+
+    /* MOBILE STYLES */
+    @media (max-width: 600px) {
+      #overlayMenu {
+        width: 100%;
+        height: auto;
+        max-height: 50vh;
+      }
+      body {
+        flex-direction: column;
+        height: auto;
+      }
+      .folder {
+        font-size: 130%;
+        margin-top: 2em;
+      }
+      .folder.subfolder {
+        font-size: 130%;
+        margin-top: 2em;
+      }
+      .item {
+        font-size: 300%;
+        margin-bottom: 0.4em;
+      }
+      #videoContainer {
+        width: 100%;
+        height: auto;
+        padding: 0.5em;
+      }
+      iframe {
+        height: 50vh;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div id="overlayMenu">
+  <div id="topInfo"></div>
+</div>
+
+<div id="videoContainer">
+  <iframe id="ytplayer" src="https://www.youtube.com/embed/7p2fUNzqwbM?enablejsapi=1&autoplay=1&mute=1" allow="autoplay" allowfullscreen></iframe>
+</div>
+
+<script>
+  // --- NEW: Info block parser
+  function updateTopInfoFromFilename(filename) {
+    const match = filename.match(/^(\d{2})(\d{2})_(\d+)_/);
+    if (!match) return;
+
+    const [, yy, mm, clan] = match;
+    const year = "20" + yy;
+    const monthNames = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JULHO", "AGO", "SET", "OUT", "NOV", "DEZ"];
+    const monthName = monthNames[parseInt(mm, 10) - 1] || "MÊS?";
+    
+    const topInfoHTML = `
+      LIGA<br>
+      THE0CLAN + OMEGA<br>
+      ${year} / ${monthName}<br>
+      CLÃ ${clan}
+    `;
+    document.getElementById("topInfo").innerHTML = topInfoHTML;
+  }
+
+  // Simulate a filename to populate topInfo block
+  updateTopInfoFromFilename('2507_3_info_04.png');
+
+  // Helper to generate number arrays as strings with leading zero if needed
+  function numArray(start, end) {
+    const arr = [];
+    for(let i=start; i<=end; i++) {
+      arr.push(i < 10 ? '0' + i : '' + i);
+    }
+    return arr;
+  }
+
+  const folderMap = {
+    "INFO": numArray(1,8),
+    "NOSSO TIME": numArray(1,16),
+  };
+
+  for(let dia=1; dia<=7; dia++) {
+    folderMap[`DIA ${dia}`] = {
+      "Info": numArray(1,7),
+      "Bases": numArray(1,15)
+    };
+  }
+
+  const menu = document.getElementById('overlayMenu');
+  const timePerSlide = 0.5;
+  let slideIndex = 0;
+  const flatItems = [];
+
+  for(const [folderName, content] of Object.entries(folderMap)) {
+    const folder = document.createElement('div');
+    folder.className = 'folder';
+    folder.textContent = folderName;
+
+    const itemList = document.createElement('div');
+    itemList.className = 'item-list';
+
+    if(Array.isArray(content)) {
+      content.forEach(itemName => {
+        const item = document.createElement('div');
+        item.className = 'item';
+        item.textContent = itemName;
+        item.dataset.time = (slideIndex * timePerSlide).toFixed(1);
+        slideIndex++;
+        flatItems.push(item);
+        itemList.appendChild(item);
+      });
+    } else {
+      for(const [subfolderName, subItems] of Object.entries(content)) {
+        const subfolder = document.createElement('div');
+        subfolder.className = 'folder subfolder';
+        subfolder.textContent = subfolderName;
+
+        const subItemList = document.createElement('div');
+        subItemList.className = 'item-list';
+
+        subfolder.addEventListener('click', () => {
+          Array.from(itemList.querySelectorAll('.item-list')).forEach(el => {
+            if(el !== subItemList) el.style.display = 'none';
+          });
+          Array.from(itemList.querySelectorAll('.folder.subfolder')).forEach(f => {
+            if(f !== subfolder) f.classList.remove('expanded');
+          });
+
+          if (subItemList.style.display === 'block') {
+            subItemList.style.display = 'none';
+            subfolder.classList.remove('expanded');
+          } else {
+            subItemList.style.display = 'block';
+            subfolder.classList.add('expanded');
+          }
+        });
+
+        subItems.forEach(itemName => {
+          const item = document.createElement('div');
+          item.className = 'item';
+          item.textContent = itemName;
+          item.dataset.time = (slideIndex * timePerSlide).toFixed(1);
+          slideIndex++;
+          flatItems.push(item);
+          subItemList.appendChild(item);
+        });
+
+        itemList.appendChild(subfolder);
+        itemList.appendChild(subItemList);
+      }
+    }
+
+    folder.addEventListener('click', () => {
+      Array.from(menu.querySelectorAll('.item-list')).forEach(el => {
+        if(el !== itemList) el.style.display = 'none';
+      });
+      Array.from(menu.querySelectorAll('.folder')).forEach(f => {
+        if(f !== folder) f.classList.remove('expanded');
+      });
+
+      if (itemList.style.display === 'block') {
+        itemList.style.display = 'none';
+        folder.classList.remove('expanded');
+      } else {
+        itemList.style.display = 'block';
+        folder.classList.add('expanded');
+      }
+    });
+
+    menu.appendChild(folder);
+    menu.appendChild(itemList);
+  }
+
+  let player;
+  function onYouTubeIframeAPIReady() {
+    player = new YT.Player('ytplayer', {
+      events: {
+        'onReady': onPlayerReady
+      }
+    });
+  }
+
+  function onPlayerReady(event) {
+    player.playVideo();
+    setTimeout(() => player.pauseVideo(), 100);
+
+    flatItems.forEach(item => {
+      item.addEventListener('click', () => {
+        flatItems.forEach(i => i.classList.remove('active'));
+        Array.from(document.querySelectorAll('.folder, .folder.subfolder')).forEach(f => f.classList.remove('active'));
+
+        item.classList.add('active');
+
+        let el = item.parentElement;
+        while(el && el !== menu) {
+          if(el.classList.contains('item-list')) {
+            const prev = el.previousElementSibling;
+            if(prev && prev.classList.contains('folder')) {
+              prev.classList.add('active');
+            }
+          }
+          el = el.parentElement;
+        }
+
+        const time = parseFloat(item.dataset.time);
+        player.seekTo(time, true);
+        player.pauseVideo();
+      });
+    });
+  }
+
+  const tag = document.createElement('script');
+  tag.src = "https://www.youtube.com/iframe_api";
+  document.body.appendChild(tag);
+</script>
+
+</body>
+</html>
